@@ -34,7 +34,7 @@ services:
     environment:
       TZ: Europe/Madrid
       GITLAB_OMNIBUS_CONFIG: |
-        external_url 'https://${DOMAIN_NAME}'
+        external_url '${SCHEME}://${DOMAIN_NAME}'
         # Database
         postgresql['enable'] = false
         gitlab_rails['db_username'] = 'gitlab'
@@ -94,7 +94,6 @@ services:
       - redis
     labels:
       - "traefik.gitlab_backend=gitlab"
-      - "traefik.frontend.rule=Host:gitlab.localhost"
       - "traefik.frontend.rule=Host:${DOMAIN_NAME}"
       - "traefik.docker.network=traefik"
       - "traefik.port=80"
