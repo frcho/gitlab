@@ -35,7 +35,7 @@ services:
       GITLAB_OMNIBUS_CONFIG: |
         external_url '${SCHEME}://${DOMAIN_NAME}'
         # Database
-        postgresql['enable'] = false
+        postgresql['enable'] = ${postgresql_enable}
         gitlab_rails['db_username'] = 'gitlab'
         gitlab_rails['db_password'] = 'gitlab'
         gitlab_rails['db_host'] = 'postgresql'
@@ -44,7 +44,7 @@ services:
         gitlab_rails['db_adapter'] = 'postgresql'
         gitlab_rails['db_encoding'] = 'utf8'
         # Redis
-        redis['enable'] = false
+        redis['enable'] = ${redis_enable}
         gitlab_rails['redis_host'] = 'redis'
         gitlab_rails['redis_port'] = '6379'
         # Mail
