@@ -95,8 +95,6 @@ services:
       - "traefik.gitlab_backend=gitlab"
       - "traefik.frontend.rule=Host:${DOMAIN_NAME}"
       - "traefik.docker.network=traefik"
-      - "traefik.port=80"
-
 networks:
     app:
         external:
