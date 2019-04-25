@@ -30,11 +30,10 @@ services:
     image: gitlab/gitlab-ce
     container_name: gitlab_server
     restart: always
-    hostname: ${DOMAIN_NAME}    
     environment:
       TZ: Europe/Madrid
       GITLAB_OMNIBUS_CONFIG: |
-        external_url '${SCHEME}://${DOMAIN_NAME}'
+        external_url 'http://${HOST_IP}'
         # Database
         postgresql['enable'] = false
         gitlab_rails['db_username'] = 'gitlab'
