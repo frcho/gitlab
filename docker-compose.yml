@@ -95,7 +95,7 @@ services:
       - "traefik.enable=true"
       - "traefik.gitlab_backend=gitlab"
       - "traefik.frontend.rule=Host:${DOMAIN_NAME}"
-      - "traefik.docker.network=traefik"
+      - "traefik.docker.network=app"
 networks:
     app:
         external:
