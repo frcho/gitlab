@@ -19,7 +19,7 @@ services:
       - POSTGRES_PASSWORD=gitlab
       - POSTGRES_DB=gitdb
     volumes:
-      - '/srv/gitlab/config:/var/lib/postgresql/data'
+      - '.data/postgresql/config:/var/lib/postgresql/data'
       # - postgresql:/var/lib/postgresql/data:Z
     networks:
       - gitlab
@@ -81,9 +81,9 @@ services:
     #   - data:/var/opt/gitlab:Z
     #   - logs:/var/log/gitlab:Z
     volumes:
-      - '/srv/gitlab/config:/etc/gitlab'
-      - '/srv/gitlab/logs:/var/log/gitlab'
-      - '/srv/gitlab/data:/var/opt/gitlab'    
+      - '.data/gitlab/config:/etc/gitlab'
+      - '.data/gitlab/logs:/var/log/gitlab'
+      - '.data/gitlab/data:/var/opt/gitlab'    
     networks:
       - gitlab
       - app
