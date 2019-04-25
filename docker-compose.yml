@@ -34,7 +34,7 @@ services:
     environment:
       TZ: America/Bogota
       GITLAB_OMNIBUS_CONFIG: |
-        external_url ${SCHEME}://${DOMAIN_NAME}
+        external_url 'http//:${DOMAIN_NAME}'
         # Database
         postgresql['enable'] = false
         gitlab_rails['db_username'] = 'gitlab'
