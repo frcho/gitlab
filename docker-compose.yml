@@ -92,6 +92,7 @@ services:
       - postgresql
       - redis
     labels:
+      - "traefik.enable=true"
       - "traefik.gitlab_backend=gitlab"
       - "traefik.frontend.rule=Host:${DOMAIN_NAME}"
       - "traefik.docker.network=traefik"
