@@ -30,7 +30,7 @@ services:
     image: gitlab/gitlab-ce
     container_name: gitlab_server
     restart: always
-    hostname: {host_ip}    
+    hostname: ${DOMAIN_NAME}    
     environment:
       TZ: Europe/Madrid
       GITLAB_OMNIBUS_CONFIG: |
