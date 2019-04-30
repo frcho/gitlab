@@ -19,7 +19,7 @@ services:
       - POSTGRES_PASSWORD=${postgresql_db_password}
       - POSTGRES_DB=${postgresql_db_database}
     volumes:
-      - '.data/postgresql/config:/var/lib/postgresql/data'
+      - '.data/postgresql:/var/lib/postgresql/data'
     networks:
       - gitlab
     labels:
@@ -96,15 +96,25 @@ services:
       image: gitlab/gitlab-runner:alpine
       container_name: gitlab_runner
       restart: always
+      environment:
+        - CI_SERVER_URL=${SCHEME}://${DOMAIN_NAME}/      
       networks:
         - gitlab
         - app      
       volumes:
-        - .data/runner/config/:/etc/gitlab-runner/
-        - /var/run/docker.sock:/var/run/docker.sock    
+        - '.data/runner:/etc/gitlab-runner'
+        - /var/run/docker.sock:/var/run/docker.sock:rw 
 
 networks:
     app:
         external:
             name: app
     gitlab: ~        
+
+docker-compose run --rm gitlab-runner register -n \
+  --url http://172.25.0.5:80/ \
+  --registration-token k6taHDqYfdfN4cMs-jC5 \
+  --executor shell \
+  --description "Shell runner devops-app" \
+  --docker-image "docker:latest" \
+  --docker-volumes /var/run/docker.sock:/var/run/docker.sock
