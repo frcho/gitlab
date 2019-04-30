@@ -12,7 +12,7 @@ services:
 
   postgresql:
     restart: always
-    image: postgres:alpine
+    image: postgres:${POSTGRES_VERSION}
     container_name: gitlab_postgresql
     environment:
       - POSTGRES_USER=${postgresql_db_username}
