@@ -35,11 +35,11 @@ services:
         external_url '${SCHEME}://${DOMAIN_NAME}'
         # Database
         postgresql['enable'] = ${postgresql_enable}
-        gitlab_rails['db_username'] = ${postgresql_db_username}
-        gitlab_rails['db_password'] = ${postgresql_db_password}
+        gitlab_rails['db_username'] = '${postgresql_db_username}'
+        gitlab_rails['db_password'] = '${postgresql_db_password}'
         gitlab_rails['db_host'] = 'postgresql'
         gitlab_rails['db_port'] = '5432'
-        gitlab_rails['db_database'] = ${postgresql_db_database}
+        gitlab_rails['db_database'] = '${postgresql_db_database}'
         gitlab_rails['db_adapter'] = 'postgresql'
         gitlab_rails['db_encoding'] = 'utf8'
         # Redis
