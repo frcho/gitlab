@@ -10,21 +10,21 @@ services:
     labels:
       - "traefik.enable=false"
 
-  postgresql:
-    restart: always
-    image: postgres:${POSTGRES_VERSION}
-    container_name: gitlab_postgresql
-    environment:
-      - POSTGRES_USER=${postgresql_db_username}
-      - POSTGRES_PASSWORD=${postgresql_db_password}
-      - POSTGRES_DB=${postgresql_db_database}
-    volumes:
-      - '.data/postgresql:/var/lib/postgresql/data'
-    networks:
-      - gitlab
-    labels:
-      - "traefik.enable=false"
-  
+  # postgresql:
+  #     restart: always
+  #     image: postgres:alpine
+  #     container_name: gitlab_postgresql
+  #     environment:
+  #       - POSTGRES_USER=${postgresql_db_username}
+  #       - POSTGRES_PASSWORD=${postgresql_db_password}
+  #       - POSTGRES_DB=${postgresql_db_database}
+  #     volumes:
+  #       - '.data/postgresql:/var/lib/postgresql/data'
+  #     networks:
+  #       - gitlab
+  #     labels:
+  #       - "traefik.enable=false"
+
   gitlab:
     image: gitlab/gitlab-ce
     container_name: gitlab_server
@@ -32,16 +32,16 @@ services:
     environment:
       TZ: America/Bogota
       GITLAB_OMNIBUS_CONFIG: |
-        external_url '${SCHEME}://${DOMAIN_NAME}'
+        external_url '${SCHEME}://${EXTERNAL_URL}'
         # Database
-        postgresql['enable'] = ${postgresql_enable}
-        gitlab_rails['db_username'] = '${postgresql_db_username}'
-        gitlab_rails['db_password'] = '${postgresql_db_password}'
-        gitlab_rails['db_host'] = 'postgresql'
-        gitlab_rails['db_port'] = '5432'
-        gitlab_rails['db_database'] = '${postgresql_db_database}'
-        gitlab_rails['db_adapter'] = 'postgresql'
-        gitlab_rails['db_encoding'] = 'utf8'
+        # postgresql['enable'] = ${postgresql_enable}
+        # gitlab_rails['db_username'] = '${postgresql_db_username}'
+        # gitlab_rails['db_password'] = '${postgresql_db_password}'
+        # gitlab_rails['db_host'] = 'postgresql'
+        # gitlab_rails['db_port'] = '5432'
+        # gitlab_rails['db_database'] = '${postgresql_db_database}'
+        # gitlab_rails['db_adapter'] = 'postgresql'
+        # gitlab_rails['db_encoding'] = 'utf8'
         # Redis
         redis['enable'] = ${redis_enable}
         gitlab_rails['redis_host'] = 'redis'
@@ -82,8 +82,9 @@ services:
       - app
     ports:
       - "${SSH_PORT}:22"
+      - "10080:80"
     depends_on:
-      - postgresql
+      # - postgresql
       - redis
     labels:
       - "traefik.enable=true"
@@ -103,8 +104,7 @@ services:
         - app      
       volumes:
         - './config/:/etc/gitlab-runner'
-        - /var/run/docker.sock:/var/run/docker.sock:rw 
-
+        - /var/run/docker.sock:/var/run/docker.sock
 networks:
     app:
         external:
