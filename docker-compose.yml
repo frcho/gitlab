@@ -48,15 +48,17 @@ services:
         gitlab_rails['redis_port'] = '6379'
         # Mail
         gitlab_rails['smtp_enable'] = ${smtp_enable}
-        gitlab_rails['smtp_address'] = ${smtp_address}
+        gitlab_rails['smtp_address'] = "smtp.${domain_mailer}"
+        gitlab_rails['smtp_domain'] = "smtp.${domain_mailer}"
         gitlab_rails['smtp_user_name'] = ${smtp_user_name}
         gitlab_rails['smtp_password'] = ${smtp_password}
         gitlab_rails['smtp_port'] = ${smtp_port}
-        gitlab_rails['smtp_domain'] = ${smtp_domain}
         gitlab_rails['smtp_authentication'] = ${smtp_authentication}
         gitlab_rails['smtp_enable_starttls_auto'] = ${smtp_enable_starttls_auto}
         gitlab_rails['smtp_tls'] = ${smtp_tls}
         gitlab_rails['smtp_openssl_verify_mode'] = ${smtp_openssl_verify_mode}   
+        gitlab_rails['gitlab_email_from'] = "webmaster@${domain_mailer}"
+        gitlab_rails['gitlab_email_reply_to'] = "noreply@${domain_mailer}"
         # SSH
         gitlab_rails['gitlab_shell_ssh_port'] = '${SSH_PORT}'
         # Nginx
@@ -69,10 +71,12 @@ services:
         gitlab_rails['backup_keep_time'] = 86400
         gitlab_rails['backup_upload_connection'] = {
           'provider' => 'AWS',
-          'region' => 'us-west-1',
+          'region' => 'us-east-1',
           'aws_access_key_id' => ${ACCESS_KEY_ID},
           'aws_secret_access_key' => ${SECRET_ACCESS_KEY}
         }
+        gitlab_rails['backup_upload_remote_directory'] = '${bucket_and_folder}'
+
     volumes:
       - '.data/gitlab/config:/etc/gitlab'
       - '.data/gitlab/logs:/var/log/gitlab'
@@ -93,18 +97,18 @@ services:
       - "traefik.frontend.rule=Host:${DOMAIN_NAME}"
       - "traefik.docker.network=app"
 
-  gitlab-runner:
-      image: gitlab/gitlab-runner:alpine
-      container_name: gitlab_runner
-      restart: always
-      environment:
-        - CI_SERVER_URL=${SCHEME}://${DOMAIN_NAME}/      
-      networks:
-        - gitlab
-        - app      
-      volumes:
-        - './config/:/etc/gitlab-runner'
-        - /var/run/docker.sock:/var/run/docker.sock
+  # gitlab-runner:
+  #     image: gitlab/gitlab-runner:alpine
+  #     container_name: gitlab_runner
+  #     restart: always
+  #     environment:
+  #       - CI_SERVER_URL=${SCHEME}://${DOMAIN_NAME}/      
+  #     networks:
+  #       - gitlab
+  #       - app      
+  #     volumes:
+  #       - './config/:/etc/gitlab-runner'
+  #       - /var/run/docker.sock:/var/run/docker.sock:ro
 networks:
     app:
         external:
