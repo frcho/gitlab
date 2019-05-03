@@ -97,18 +97,18 @@ services:
       - "traefik.frontend.rule=Host:${DOMAIN_NAME}"
       - "traefik.docker.network=app"
 
-  # gitlab-runner:
-  #     image: gitlab/gitlab-runner:alpine
-  #     container_name: gitlab_runner
-  #     restart: always
-  #     environment:
-  #       - CI_SERVER_URL=${SCHEME}://${DOMAIN_NAME}/      
-  #     networks:
-  #       - gitlab
-  #       - app      
-  #     volumes:
-  #       - './config/:/etc/gitlab-runner'
-  #       - /var/run/docker.sock:/var/run/docker.sock:ro
+  gitlab-runner:
+      image: gitlab/gitlab-runner:alpine
+      container_name: gitlab_runner
+      restart: always
+      environment:
+        - CI_SERVER_URL=${SCHEME}://${DOMAIN_NAME}/      
+      networks:
+        - gitlab
+        - app      
+      volumes:
+        - './config/:/etc/gitlab-runner'
+        - /var/run/docker.sock:/var/run/docker.sock:ro
 networks:
     app:
         external:
