@@ -54,6 +54,7 @@ services:
         gitlab_rails['backup_upload_remote_directory'] = '${bucket_and_folder}'
         ## Default Theme
         gitlab_rails['gitlab_default_theme'] = 5
+        gitlab_rails['time_zone'] = 'America/Bogota'
 
     volumes:
       - '.data/gitlab/config:/etc/gitlab'
