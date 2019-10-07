@@ -41,6 +41,13 @@ services:
         registry_external_url '${SCHEME}://${REGISTRY_HOSTNAME}'
         gitlab_rails['registry_enabled'] = true
         gitlab_rails['registry_issuer'] = "gitlab-issuer"
+        # registry_nginx['listen_port'] = 5100
+        # registry_nginx['listen_https'] = false
+        # registry_nginx['proxy_set_headers'] = {
+        #   "Host" => "${REGISTRY_HOSTNAME}",
+        #   "X-Forwarded-Proto" => "${SCHEME}",
+        #   "X-Forwarded-Ssl" => "${SSL}"
+        # }
         # SSH
         gitlab_rails['gitlab_shell_ssh_port'] = '${SSH_PORT}'
         # Nginx
@@ -77,6 +84,7 @@ services:
       - redis
     labels:
       - "traefik.enable=true"
+      # Host settings for GitLab itself
       - "traefik.http.services.gitlab.loadbalancer.server.port=80"
       - 'traefik.http.routers.gitlab.rule=Host(`${DOMAIN_NAME}`)'
       - "traefik.docker.network=app"
@@ -102,6 +110,7 @@ services:
     restart: always
     image: registry:2
     hostname: ${REGISTRY_HOSTNAME}
+    container_name: registry
     # I had problems with the health check. Sometimes it reported unhealthyness and therefore Traefik removed
     # the container, so I turned it off. Maybe it works by now.
     healthcheck:
@@ -109,7 +118,7 @@ services:
     ports:
       - "5000:5000"      
     volumes:
-      - '/srv/gitlab/data/gitlab-rails/shared/registry:/registry'
+      - '.data/gitlab/data/gitlab-rails/shared/registry:/registry'
       #
       # First run this stack before
       # using letsencrypt certs !
@@ -130,13 +139,18 @@ services:
       # REGISTRY_AUTH_TOKEN_REALM: ${SCHEME}://${REGISTRY_HOSTNAME}/jwt/auth
       # REGISTRY_AUTH_TOKEN_SERVICE: container_registry
       # REGISTRY_AUTH_TOKEN_ISSUER: gitlab-issuer
-      # REGISTRY_AUTH_TOKEN_AUTOREDIRECT: 'False'
+      REGISTRY_AUTH_TOKEN_AUTOREDIRECT: 'False'
       # REGISTRY_AUTH_TOKEN_ROOTCERTBUNDLE: /certs/gitlab-registry.crt
       REGISTRY_STORAGE_DELETE_ENABLED: 'true'
       REGISTRY_HTTP_SECRET: 'testing'
     networks:
       - gitlab
-      - app       
+      - app   
+    labels:
+        - "traefik.enable=true"
+        - "traefik.http.services.registry.loadbalancer.server.port=5000"
+        - 'traefik.http.routers.registry.rule=Host(`${REGISTRY_HOSTNAME}`)'
+        - "traefik.docker.network=app"          
 
 networks:
     app:
