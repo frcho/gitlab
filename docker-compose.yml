@@ -118,10 +118,10 @@ services:
         - app   
       labels:
           - "traefik.enable=true"
-          - "traefik.http.routers.registry.rule=Host(`${REGISTRY_HOSTNAME}`)"
-          - "traefik.http.routers.${PROJECT_NAME}-server.middlewares=redirect@file"
-          - "traefik.http.routers.${PROJECT_NAME}-server.tls.certresolver=le"
-          - "traefik.http.services.registry.loadbalancer.server.port=5000"
+          - "traefik.http.routers.${PROJECT_NAME}-registry.rule=Host(`${REGISTRY_HOSTNAME}`)"
+          - "traefik.http.routers.${PROJECT_NAME}-registry.middlewares=redirect@file"
+          - "traefik.http.routers.${PROJECT_NAME}-registry.tls.certresolver=le"
+          - "traefik.http.services.${PROJECT_NAME}-registry.loadbalancer.server.port=5000"
           - "traefik.docker.network=app"          
 
 networks:
