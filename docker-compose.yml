@@ -59,7 +59,7 @@ services:
           'aws_access_key_id' => ${ACCESS_KEY_ID},
           'aws_secret_access_key' => ${SECRET_ACCESS_KEY}
         }
-        gitlab_rails['backup_upload_remote_directory'] = '${bucket_and_folder}'
+        gitlab_rails['backup_upload_remote_directory'] = '${BUCKET_DATA}'
         ## Default Theme
         gitlab_rails['gitlab_default_theme'] = 5
         gitlab_rails['time_zone'] = 'America/Bogota'
@@ -103,17 +103,23 @@ services:
       restart: unless-stopped
       image: registry:2.7
       container_name: gitlab_registry
-      volumes:
-        - '.data/gitlab/registry/data:/registry'    
-        - '.data/gitlab/registry/certs:/certs'    
       environment:
         REGISTRY_LOG_LEVEL: debug
-        REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY: /registry
+        # REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY: /registry
         REGISTRY_AUTH_TOKEN_REALM: '${SCHEME}://${EXTERNAL_URL}/jwt/auth'    # Change url here
         REGISTRY_AUTH_TOKEN_SERVICE: container_registry
         REGISTRY_AUTH_TOKEN_ISSUER: gitlab-issuer
         REGISTRY_AUTH_TOKEN_ROOTCERTBUNDLE: /certs/gitlab-registry.crt
         REGISTRY_STORAGE_DELETE_ENABLED: 'true'
+        REGISTRY_STORAGE: s3
+        REGISTRY_STORAGE_S3_ACCESSKEY: ${ACCESS_KEY_ID}
+        REGISTRY_STORAGE_S3_SECRETKEY: ${SECRET_ACCESS_KEY}
+        REGISTRY_STORAGE_S3_BUCKET: ${BUCKET_REGISTER}
+        REGISTRY_STORAGE_S3_REGION: us-east-1
+        REGISTRY_HEALTH_STORAGEDRIVER_ENABLED: false     
+      volumes:
+        # - '.data/gitlab/registry/data:/registry'    
+        - '.data/gitlab/registry/certs:/certs'    
       networks:
         - app   
       labels:
