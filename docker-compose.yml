@@ -37,11 +37,11 @@ services:
         gitlab_rails['gitlab_email_reply_to'] = "noreply@${domain_mailer}"
 
         # GITLAB DOCKER IMAGE REGISTRY: so that we can use our docker image registry with gitlab
-        registry['enable'] = false # we do not activate this option because we provide our own registry
-        gitlab_rails['registry_enabled'] = true
-        gitlab_rails['registry_host'] = '${REGISTRY_HOSTNAME}'
-        gitlab_rails['registry_api_url'] = '${SCHEME}://${REGISTRY_HOSTNAME}'
-        gitlab_rails['registry_issuer'] = "gitlab-issuer"
+        # registry['enable'] = false # we do not activate this option because we provide our own registry
+        # gitlab_rails['registry_enabled'] = true
+        # gitlab_rails['registry_host'] = '${REGISTRY_HOSTNAME}'
+        # gitlab_rails['registry_api_url'] = '${SCHEME}://${REGISTRY_HOSTNAME}'
+        # gitlab_rails['registry_issuer'] = "gitlab-issuer"
 
         # SSH
         gitlab_rails['gitlab_shell_ssh_port'] = '${SSH_PORT}'
@@ -56,10 +56,10 @@ services:
         gitlab_rails['backup_upload_connection'] = {
           'provider' => 'AWS',
           'region' => 'us-east-1',
-          'aws_access_key_id' => ${ACCESS_KEY_ID},
-          'aws_secret_access_key' => ${SECRET_ACCESS_KEY}
+          'aws_access_key_id' => "${ACCESS_KEY_ID}",
+          'aws_secret_access_key' => "${SECRET_ACCESS_KEY}"
         }
-        gitlab_rails['backup_upload_remote_directory'] = '${bucket_and_folder}'
+        gitlab_rails['backup_upload_remote_directory'] = "${BUCKET_DATA}"
         ## Default Theme
         gitlab_rails['gitlab_default_theme'] = 5
         gitlab_rails['time_zone'] = 'America/Bogota'
@@ -97,28 +97,37 @@ services:
         - './config/:/etc/gitlab-runner'
         - /var/run/docker.sock:/var/run/docker.sock:ro
 
-  registry:
-      restart: unless-stopped
-      image: registry:2.7
-      container_name: gitlab_registry
-      volumes:
-        - '.data/gitlab/registry/data:/registry'    
-        - '.data/gitlab/registry/certs:/certs'    
-      environment:
-        REGISTRY_LOG_LEVEL: debug
-        REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY: /registry
-        REGISTRY_AUTH_TOKEN_REALM: '${SCHEME}://${EXTERNAL_URL}/jwt/auth'    # Change url here
-        REGISTRY_AUTH_TOKEN_SERVICE: container_registry
-        REGISTRY_AUTH_TOKEN_ISSUER: gitlab-issuer
-        REGISTRY_AUTH_TOKEN_ROOTCERTBUNDLE: /certs/gitlab-registry.crt
-        REGISTRY_STORAGE_DELETE_ENABLED: 'true'
-      networks:
-        - app   
-      labels:
-          - "traefik.enable=true"
-          - "traefik.http.routers.registry.rule=Host(`${REGISTRY_HOSTNAME}`)"
-          - "traefik.http.services.registry.loadbalancer.server.port=5000"
-          - "traefik.docker.network=app"          
+  # registry:
+  #     restart: unless-stopped
+  #     image: registry:2.7
+  #     container_name: gitlab_registry
+  #     environment:
+  #       REGISTRY_LOG_LEVEL: debug
+  #       REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY: /registry
+  #       REGISTRY_AUTH_TOKEN_REALM: '${SCHEME}://${EXTERNAL_URL}/jwt/auth'    # Change url here
+  #       REGISTRY_AUTH_TOKEN_SERVICE: container_registry
+  #       REGISTRY_AUTH_TOKEN_ISSUER: gitlab-issuer
+  #       REGISTRY_AUTH_TOKEN_ROOTCERTBUNDLE: /certs/gitlab-registry.crt
+  #       REGISTRY_STORAGE_DELETE_ENABLED: 'true'
+  #       # REGISTRY_STORAGE: s3
+  #       # REGISTRY_STORAGE_S3_ACCESSKEY: ${ACCESS_KEY_ID}
+  #       # REGISTRY_STORAGE_S3_SECRETKEY: ${SECRET_ACCESS_KEY}
+  #       # REGISTRY_STORAGE_S3_BUCKET: ${BUCKET_REGISTER}
+  #       # REGISTRY_STORAGE_S3_REGION: us-east-1
+  #       # REGISTRY_HEALTH_STORAGEDRIVER_ENABLED: 'false'
+  #       # REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY: /registry
+  #     volumes:
+  #       - '.data/gitlab/registry/certs:/certs'    
+  #       - '.data/gitlab/registry/data:/registry'    
+  #     networks:
+  #       - app   
+  #     labels:
+  #       - "traefik.enable=true"
+  #       - "traefik.http.routers.${PROJECT_NAME}-registry.rule=Host(`${REGISTRY_HOSTNAME}`)"
+  #       - "traefik.http.routers.${PROJECT_NAME}-registry.middlewares=redirect@file"
+  #       - "traefik.http.routers.${PROJECT_NAME}-registry.tls.certresolver=le"
+  #       - "traefik.http.services.${PROJECT_NAME}-registry.loadbalancer.server.port=5000"
+  #       - "traefik.docker.network=app"        
 
 networks:
     app:
