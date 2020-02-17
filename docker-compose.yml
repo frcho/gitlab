@@ -11,8 +11,8 @@ services:
       - "traefik.enable=false"
 
   gitlab:
-    image: gitlab/gitlab-ce:12.3.2-ce.0
-    container_name: ${PROJECT_NAME}_server    
+    image: gitlab/gitlab-ce:12.6.2-ce.0
+    container_name: ${PROJECT_NAME}_server
     restart: always
     environment:
       TZ: America/Bogota
@@ -32,16 +32,16 @@ services:
         gitlab_rails['smtp_authentication'] = ${smtp_authentication}
         gitlab_rails['smtp_enable_starttls_auto'] = ${smtp_enable_starttls_auto}
         gitlab_rails['smtp_tls'] = ${smtp_tls}
-        gitlab_rails['smtp_openssl_verify_mode'] = ${smtp_openssl_verify_mode} 
+        gitlab_rails['smtp_openssl_verify_mode'] = ${smtp_openssl_verify_mode}
         gitlab_rails['gitlab_email_from'] = "webmaster@${domain_mailer}"
         gitlab_rails['gitlab_email_reply_to'] = "noreply@${domain_mailer}"
 
-        # GITLAB DOCKER IMAGE REGISTRY: so that we can use our docker image registry with gitlab
-        # registry['enable'] = false # we do not activate this option because we provide our own registry
-        # gitlab_rails['registry_enabled'] = true
-        # gitlab_rails['registry_host'] = '${REGISTRY_HOSTNAME}'
-        # gitlab_rails['registry_api_url'] = '${SCHEME}://${REGISTRY_HOSTNAME}'
-        # gitlab_rails['registry_issuer'] = "gitlab-issuer"
+        # #GITLAB DOCKER IMAGE REGISTRY: so that we can use our docker image registry with gitlab
+        registry['enable'] = false # we do not activate this option because we provide our own registry
+        gitlab_rails['registry_enabled'] = true
+        gitlab_rails['registry_host'] = '${REGISTRY_HOSTNAME}'
+        gitlab_rails['registry_api_url'] = '${SCHEME}://${REGISTRY_HOSTNAME}'
+        gitlab_rails['registry_issuer'] = "gitlab-issuer"
 
         # SSH
         gitlab_rails['gitlab_shell_ssh_port'] = '${SSH_PORT}'
@@ -67,12 +67,13 @@ services:
     volumes:
       - '.data/gitlab/config:/etc/gitlab'
       - '.data/gitlab/logs:/var/log/gitlab'
-      - '.data/gitlab/data:/var/opt/gitlab'    
-      - '.data/gitlab/registry/certs:/certs'    
+      - '.data/gitlab/data:/var/opt/gitlab'
+      - '.data/gitlab/registry/certs:/certs'
+      - '.data/gitlab/registry/data:/registry'
     networks:
       - gitlab
       - app
-    mem_limit: 3000M      
+    mem_limit: 3000M
     ports:
       - "${SSH_PORT}:22"
       - "10080:80"
@@ -82,55 +83,57 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.${PROJECT_NAME}-server.rule=Host(`${DOMAIN_NAME}`)"
       - "traefik.http.services.${PROJECT_NAME}-server.loadbalancer.server.port=80"
-      - "traefik.docker.network=app"    
+      - "traefik.docker.network=app"
 
   gitlab-runner:
       image: gitlab/gitlab-runner:alpine
       container_name: gitlab_runner
       restart: always
       environment:
-        - CI_SERVER_URL=${SCHEME}://${DOMAIN_NAME}/      
+        - CI_SERVER_URL=${SCHEME}://${DOMAIN_NAME}/
       networks:
         - gitlab
-        - app      
+        - app
       volumes:
         - './config/:/etc/gitlab-runner'
         - /var/run/docker.sock:/var/run/docker.sock:ro
 
-  # registry:
-  #     restart: unless-stopped
-  #     image: registry:2.7
-  #     container_name: gitlab_registry
-  #     environment:
-  #       REGISTRY_LOG_LEVEL: debug
-  #       REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY: /registry
-  #       REGISTRY_AUTH_TOKEN_REALM: '${SCHEME}://${EXTERNAL_URL}/jwt/auth'    # Change url here
-  #       REGISTRY_AUTH_TOKEN_SERVICE: container_registry
-  #       REGISTRY_AUTH_TOKEN_ISSUER: gitlab-issuer
-  #       REGISTRY_AUTH_TOKEN_ROOTCERTBUNDLE: /certs/gitlab-registry.crt
-  #       REGISTRY_STORAGE_DELETE_ENABLED: 'true'
-  #       # REGISTRY_STORAGE: s3
-  #       # REGISTRY_STORAGE_S3_ACCESSKEY: ${ACCESS_KEY_ID}
-  #       # REGISTRY_STORAGE_S3_SECRETKEY: ${SECRET_ACCESS_KEY}
-  #       # REGISTRY_STORAGE_S3_BUCKET: ${BUCKET_REGISTER}
-  #       # REGISTRY_STORAGE_S3_REGION: us-east-1
-  #       # REGISTRY_HEALTH_STORAGEDRIVER_ENABLED: 'false'
-  #       # REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY: /registry
-  #     volumes:
-  #       - '.data/gitlab/registry/certs:/certs'    
-  #       - '.data/gitlab/registry/data:/registry'    
-  #     networks:
-  #       - app   
-  #     labels:
-  #       - "traefik.enable=true"
-  #       - "traefik.http.routers.${PROJECT_NAME}-registry.rule=Host(`${REGISTRY_HOSTNAME}`)"
-  #       - "traefik.http.routers.${PROJECT_NAME}-registry.middlewares=redirect@file"
-  #       - "traefik.http.routers.${PROJECT_NAME}-registry.tls.certresolver=le"
-  #       - "traefik.http.services.${PROJECT_NAME}-registry.loadbalancer.server.port=5000"
-  #       - "traefik.docker.network=app"        
+  registry:
+      restart: unless-stopped
+      image: registry:2.7
+      container_name: gitlab_registry
+      environment:
+        REGISTRY_LOG_LEVEL: debug
+        REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY: /registry
+        REGISTRY_AUTH_TOKEN_REALM: '${SCHEME}://${EXTERNAL_URL}/jwt/auth'    # Change url here
+        REGISTRY_AUTH_TOKEN_SERVICE: container_registry
+        REGISTRY_AUTH_TOKEN_ISSUER: gitlab-issuer
+        REGISTRY_AUTH_TOKEN_ROOTCERTBUNDLE: /certs/gitlab-registry.crt
+        REGISTRY_STORAGE_DELETE_ENABLED: 'true'
+        # REGISTRY_STORAGE: s3
+        # REGISTRY_STORAGE_S3_ACCESSKEY: ${ACCESS_KEY_ID}
+        # REGISTRY_STORAGE_S3_SECRETKEY: ${SECRET_ACCESS_KEY}
+        # REGISTRY_STORAGE_S3_BUCKET: ${BUCKET_REGISTER}
+        # REGISTRY_STORAGE_S3_REGION: us-east-1
+        # REGISTRY_HEALTH_STORAGEDRIVER_ENABLED: 'false'
+      volumes:
+        - '.data/gitlab/registry/certs:/certs'
+        - '.data/gitlab/registry/data:/registry'
+      ports:
+        - 5000
+      networks:
+        - app
+        - gitlab
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.${PROJECT_NAME}-registry.rule=Host(`${REGISTRY_HOSTNAME}`)"
+        # - "traefik.http.routers.${PROJECT_NAME}-registry.middlewares=redirect@file"
+        # - "traefik.http.routers.${PROJECT_NAME}-registry.tls.certresolver=le"
+        - "traefik.http.services.${PROJECT_NAME}-registry.loadbalancer.server.port=5000"
+        - "traefik.docker.network=app"
 
 networks:
     app:
         external:
             name: app
-    gitlab: ~        
+    gitlab: ~
