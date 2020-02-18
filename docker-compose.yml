@@ -41,6 +41,8 @@ services:
         gitlab_rails['registry_enabled'] = true
         gitlab_rails['registry_host'] = '${REGISTRY_HOSTNAME}'
         gitlab_rails['registry_api_url'] = '${SCHEME}://${REGISTRY_HOSTNAME}'
+        gitlab_rails['registry_path'] = '/registry'
+        gitlab_rails['registry_port'] = "5000"
         gitlab_rails['registry_issuer'] = "gitlab-issuer"
 
         # SSH
@@ -86,16 +88,17 @@ services:
       - "traefik.docker.network=app"
 
   gitlab-runner:
+      network_mode: host
       image: gitlab/gitlab-runner:alpine
       container_name: gitlab_runner
       restart: always
       environment:
         - CI_SERVER_URL=${SCHEME}://${DOMAIN_NAME}/
-      networks:
-        - gitlab
-        - app
+      # networks:
+      #   - gitlab
+      #   - app
       volumes:
-        - './config/:/etc/gitlab-runner'
+        # - './config/:/etc/gitlab-runner/'
         - /var/run/docker.sock:/var/run/docker.sock:ro
 
   registry:
@@ -121,9 +124,9 @@ services:
         - '.data/gitlab/registry/data:/registry'
       ports:
         - 5000
-      networks:
-        - app
-        - gitlab
+      # networks:
+      #   - app
+      #   - gitlab
       labels:
         - "traefik.enable=true"
         - "traefik.http.routers.${PROJECT_NAME}-registry.rule=Host(`${REGISTRY_HOSTNAME}`)"
