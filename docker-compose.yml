@@ -11,7 +11,7 @@ services:
       - "traefik.enable=false"
 
   gitlab:
-    image: gitlab/gitlab-ce:12.6.2-ce.0
+    image: gitlab/gitlab-ce:12.7.5-ce.0
     container_name: ${PROJECT_NAME}_server
     restart: always
     environment:
@@ -124,9 +124,9 @@ services:
         - '.data/gitlab/registry/data:/registry'
       ports:
         - 5000
-      # networks:
-      #   - app
-      #   - gitlab
+      networks:
+        - app
+        - gitlab
       labels:
         - "traefik.enable=true"
         - "traefik.http.routers.${PROJECT_NAME}-registry.rule=Host(`${REGISTRY_HOSTNAME}`)"
