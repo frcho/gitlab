@@ -40,13 +40,7 @@ To directly modify the file (and create a backup) – works with BSD and GNU sed
 sed -i.bak '/registry.gitlab.localhost/d' /etc/hosts &&  echo "$(docker inspect -f '{{ .NetworkSettings.Networks.gitlab_gitlab.IPAddress}}' gitlab_registry)    registry.gitlab.localhost" >> /etc/hosts
 ~~~
 
-Now we can test if everything was well, if you can see something like this, Great it, otherwise try again.
-
-WARNING! Your password will be stored unencrypted in /root/.docker/config.json.
-Configure a credential helper to remove this warning. See
-https://docs.docker.com/engine/reference/commandline/login/#credentials-store
-
-Login Succeeded
+Now we can test if everything was well
 
 ~~~
 docker login registry.gitlab.localhost:5000
@@ -54,8 +48,17 @@ docker login registry.gitlab.localhost:5000
 
 The above command request user and password, please type it, if everything gone well.
 
-And now for GitLab and our Docker Image Registry to communicate with each other, we need a shared certificate. The good thing is, GitLab creates a key for us at bootstrap, only the registry doesn't know about it yet.
 
+If you can see something like this, Great it, otherwise try again.
+
+WARNING! Your password will be stored unencrypted in /root/.docker/config.json.
+Configure a credential helper to remove this warning. See
+https://docs.docker.com/engine/reference/commandline/login/#credentials-store
+
+Login Succeeded
+
+And now for GitLab and our Docker Image Registry to communicate with each other, we need a shared certificate.
+The good thing is, GitLab creates a key for us at bootstrap, only the registry doesn't know about it yet.
 What we have to do is copy the certificate key created by GitLab into the volume of the registry and create a certificate out of it. Let's do it:
 
 ~~~
